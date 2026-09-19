@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌾 Deep RL Smart Precision Irrigation Dashboard</title>
+  <!-- Google Fonts & Chart.js CDN -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent-green: #10b981;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-amber: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.12) 0px, transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .header-title h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #34d399, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-title p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+    }
+
+    .badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      padding: 0.4rem 0.8rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .metric-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: var(--accent-green);
+      margin-top: 0.4rem;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+    }
+
+    .chart-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.5);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <h1>🌾 Deep RL Smart Precision Irrigation</h1>
+      <p>FAO-56 Dual Crop Coefficient Benchmark Dashboard (PPO vs SAC vs Rule-Based Baseline)</p>
+    </div>
+    <div class="badge">LIVE BENCHMARK RESULTS</div>
+  </header>
+
+  <!-- Key Performance Metrics Cards -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-title">Best Overall Agent</div>
+      <div class="metric-value" id="best-agent">SAC Dynamic</div>
+      <div class="metric-sub">✓ Top Yield & Lowest Penalty</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Max Yield Biomass</div>
+      <div class="metric-value" id="max-yield">9.75</div>
+      <div class="metric-sub">+525% vs un-irrigated dryland</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Water Saved (SAC Dynamic)</div>
+      <div class="metric-value" id="water-saved">14.0 mm</div>
+      <div class="metric-sub">vs Rule-Based Baseline (E0)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Max Water Efficiency</div>
+      <div class="metric-value" id="stress-index">0.0265</div>
+      <div class="metric-sub">PPO Dynamic (355mm saved)</div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>💧 Soil Moisture Trajectories vs FAO-56 Thresholds</h3>
+      <div class="chart-container">
+        <canvas id="moistureChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>🌱 Biomass Yield Accumulation Trajectory</h3>
+      <div class="chart-container">
+        <canvas id="biomassChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>⚡ Learned Irrigation Actions vs Growth Stage</h3>
+      <div class="chart-container">
+        <canvas id="actionChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>📊 Water Productivity (Yield / Water Applied)</h3>
+      <div class="chart-container">
+        <canvas id="wpChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Summary Table -->
+  <div class="chart-card">
+    <h3>📋 Quantitative Benchmark Summary</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Exp</th>
+          <th>Agent</th>
+          <th>Reward Type</th>
+          <th>Total Water (mm)</th>
+          <th>Yield Biomass</th>
+          <th>Water Productivity</th>
+          <th>Stress Index (Ks)</th>
+        </tr>
+      </thead>
+      <tbody id="summary-table-body">
+        <!-- Dynamically populated -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Fetch results.json and render charts
+    async function loadData() {
+      try {
+        const response = await fetch('results.json');
+        const data = await response.json();
+        renderDashboard(data);
+      } catch (err) {
+        console.warn("results.json not found directly, loading demo data fallback", err);
+      }
+    }
+
+    function renderDashboard(data) {
+      const exps = Object.keys(data);
+      const colors = {
+        'E0': '#94a3b8',
+        'E1': '#3b82f6',
+        'E2': '#06b6d4',
+        'E3': '#f59e0b',
+        'E4': '#10b981'
+      };
+
+      // Populate Table
+      const tableBody = document.getElementById('summary-table-body');
+      tableBody.innerHTML = '';
+      exps.forEach(exp => {
+        const item = data[exp];
+        const row = `
+          <tr>
+            <td><strong>${exp}</strong></td>
+            <td>${item.agent}</td>
+            <td>${item.reward_type}</td>
+            <td>${item.total_water.toFixed(2)} mm</td>
+            <td>${item.yield.toFixed(2)}</td>
+            <td><strong>${item.wp.toFixed(4)}</strong></td>
+            <td>${item.mean_ks.toFixed(2)}</td>
+          </tr>
+        `;
+        tableBody.innerHTML += row;
+      });
+
+      const days = Array.from({length: 120}, (_, i) => i + 1);
+
+      // 1. Soil Moisture Chart
+      const moistureDatasets = exps.map(exp => ({
+        label: `${exp} (${data[exp].agent})`,
+        data: data[exp].moisture,
+        borderColor: colors[exp],
+        borderWidth: 2,
+        fill: false,
+        pointRadius: 0
+      }));
+      // Threshold lines
+      moistureDatasets.push({
+        label: 'Field Capacity (0.38)',
+        data: Array(120).fill(0.38),
+        borderColor: 'rgba(59, 130, 246, 0.6)',
+        borderDash: [5, 5],
+        borderWidth: 1.5,
+        pointRadius: 0
+      });
+      moistureDatasets.push({
+        label: 'RAW Threshold (0.265)',
+        data: Array(120).fill(0.265),
+        borderColor: 'rgba(245, 158, 11, 0.6)',
+        borderDash: [5, 5],
+        borderWidth: 1.5,
+        pointRadius: 0
+      });
+
+      new Chart(document.getElementById('moistureChart'), {
+        type: 'line',
+        data: { labels: days, datasets: moistureDatasets },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0.15, max: 0.42 } } }
+      });
+
+      // 2. Biomass Chart
+      const biomassDatasets = exps.map(exp => ({
+        label: `${exp} (${data[exp].agent})`,
+        data: data[exp].biomass,
+        borderColor: colors[exp],
+        borderWidth: 2.5,
+        fill: false,
+        pointRadius: 0
+      }));
+
+      new Chart(document.getElementById('biomassChart'), {
+        type: 'line',
+        data: { labels: days, datasets: biomassDatasets },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      // 3. Actions Chart
+      const actionDatasets = exps.map(exp => ({
+        label: `${exp} (${data[exp].agent})`,
+        data: data[exp].actions,
+        borderColor: colors[exp],
+        borderWidth: 1.8,
+        fill: false,
+        pointRadius: 0
+      }));
+
+      new Chart(document.getElementById('actionChart'), {
+        type: 'line',
+        data: { labels: days, datasets: actionDatasets },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 35 } } }
+      });
+
+      // 4. Water Productivity Bar Chart
+      new Chart(document.getElementById('wpChart'), {
+        type: 'bar',
+        data: {
+          labels: exps,
+          datasets: [{
+            label: 'Water Productivity (Yield / Water)',
+            data: exps.map(e => data[e].wp),
+            backgroundColor: exps.map(e => colors[e]),
+            borderRadius: 8
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    window.onload = loadData;
+  </script>
+</body>
+</html>

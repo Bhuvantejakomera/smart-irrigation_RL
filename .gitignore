@@ -1,0 +1,17 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Matplotlib & Local Caches
+.matplotlib_cache/
+.DS_Store
+
+# IDE & Editor files
+.vscode/
+.idea/

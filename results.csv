@@ -1,0 +1,6 @@
+Experiment,Agent,Reward_Type,Total_Reward,Water_Used_mm,Yield_Biomass,Water_Productivity,Runoff_mm,Stress_Index
+E0,RuleBased,dynamic,-7.94,525.00,9.65,0.0184,0.00,0.99
+E1,PPO,fixed,-42.37,0.00,1.56,1564667.5000,0.00,0.24
+E2,PPO,dynamic,-60.02,67.32,2.68,0.0398,0.00,0.34
+E3,SAC,fixed,-52.23,327.78,6.61,0.0202,0.00,0.73
+E4,SAC,dynamic,-26.40,482.48,9.32,0.0193,0.00,0.95
